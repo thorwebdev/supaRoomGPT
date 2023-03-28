@@ -20,6 +20,11 @@ import { useSession, signIn } from "next-auth/react";
 import useSWR from "swr";
 import { Rings } from "react-loader-spinner";
 import getRemainingTime from "../utils/getRemainingTime";
+import Uploady, { useItemFinishListener } from "@rpldy/uploady";
+import UploadPreview from "@rpldy/upload-preview";
+import UploadButton from "@rpldy/upload-button";
+import { supabaseStorageSender } from "../utils/supabaseUploader";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 // Configuration for the uploader
 const uploader = Uploader({
@@ -70,21 +75,44 @@ const Home: NextPage = () => {
     },
   };
 
-  const UploadDropZone = () => (
-    <UploadDropzone
-      uploader={uploader}
-      options={options}
-      onUpdate={(file) => {
-        if (file.length !== 0) {
-          setPhotoName(file[0].originalFile.originalFileName);
-          // TODO: Make sure these are the image dimensions we want
-          setOriginalPhoto(file[0].fileUrl.replace("raw", "thumbnail"));
-          generatePhoto(file[0].fileUrl.replace("raw", "thumbnail"));
-        }
-      }}
-      width="670px"
-      height="250px"
-    />
+  const UploadButtonWithEvents = () => {
+    useItemFinishListener((file) => {
+      console.log(file.uploadResponse.publicUrl);
+      setPhotoName(file.uploadResponse.path);
+      // TODO: Make sure these are the image dimensions we want
+      setOriginalPhoto(file.uploadResponse.publicUrl);
+      // generatePhoto(file.uploadResponse.publicUrl);
+    });
+
+    return <UploadButton />;
+  };
+
+  const UploadDropZone = ({ supabase }: { supabase: SupabaseClient }) => (
+    <Uploady
+      multiple={false}
+      send={supabaseStorageSender({
+        supabase,
+        bucket: "rooms",
+        fileNamePrefix: session?.user.name ?? "",
+      })}
+    >
+      <UploadButtonWithEvents />
+      <UploadPreview />
+    </Uploady>
+    // <UploadDropzone
+    //   uploader={uploader}
+    //   options={options}
+    //   onUpdate={(file) => {
+    //     if (file.length !== 0) {
+    //       setPhotoName(file[0].originalFile.originalFileName);
+    //       // TODO: Make sure these are the image dimensions we want
+    //       setOriginalPhoto(file[0].fileUrl.replace("raw", "thumbnail"));
+    //       generatePhoto(file[0].fileUrl.replace("raw", "thumbnail"));
+    //     }
+    //   }}
+    //   width="670px"
+    //   height="250px"
+    // />
   );
 
   async function generatePhoto(fileUrl: string) {
@@ -237,7 +265,19 @@ const Home: NextPage = () => {
                       </p>
                     </div>
                   </div>
-                  <UploadDropZone />
+                  <UploadDropZone
+                    supabase={createClient(
+                      "http://localhost:54321",
+                      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
+                      {
+                        global: {
+                          headers: {
+                            Authorization: `Bearer ${session.supabaseAccessToken}`,
+                          },
+                        },
+                      }
+                    )}
+                  />
                 </>
               ) : (
                 !originalPhoto && (
