@@ -8,6 +8,17 @@ This project generates new designs of your room with AI.
 
 It uses an ML model called [ControlNet](https://github.com/lllyasviel/ControlNet) to generate variations of rooms. This application gives you the ability to upload a photo of any room, which will send it through this ML Model using a Next.js API route, and return your generated room. The ML Model is hosted on [Replicate](https://replicate.com) and [Upload](https://upload.io) is used for image storage.
 
+## Auth setup
+
+1. Use `openssl rand -base64 32` to generate NEXTAUTH_SECRET
+2. Add DB URL and SHADOW DB URL from Neon
+3. Create a new project in console.cloud.google.com
+4. Click configure consent screen in API credentials page and click external
+5. Add an app name, do not upload logo, add authorized domain
+6. Publish app
+7. Create credentials -> Oauth client ID
+8. Run `supabase start` to start a local Postgres instance.
+
 ## Running Locally
 
 ### Cloning the repository the local machine.
@@ -26,6 +37,10 @@ git clone https://github.com/Nutlope/roomGPT
 
 Create a file in root directory of project with env. And store your API key in it, as shown in the .example.env file.
 
+```bash
+cp .example.env .env
+```
+
 If you'd also like to do rate limiting, create an account on UpStash, create a Redis database, and populate the two environment variables in `.env` as well. If you don't want to do rate limiting, you don't need to make any changes.
 
 ### Installing the dependencies.
@@ -42,21 +57,10 @@ Then, run the application in the command line and it will be available at `http:
 npm run dev
 ```
 
-## Auth setup
-
-1. Use `openssl rand -base64 32` to generate NEXTAUTH_SECRET
-2. Add DB URL and SHADOW DB URL from Neon
-3. Create a new project in console.cloud.google.com
-4. Click configure consent screen in API credentials page and click external
-5. Add an app name, do not upload logo, add authorized domain
-6. Publish app
-7. Create credentials -> Oauth client ID
-8. Run npx prisma db push && prisma migrate dev && prisma generate
-
 ## One-Click Deploy
 
 Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Nutlope/roomGPT&env=REPLICATE_API_KEY,NEXTAUTH_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,DATABASE_URL,SHADOW_DATABASE_URL,NEXTAUTH_URL&project-name=room-GPT&repo-name=roomGPT)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/thorwebdev/supaRoomGPT&env=REPLICATE_API_KEY,NEXTAUTH_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,NEXTAUTH_URL&project-name=room-GPT&repo-name=roomGPT)
 
 > Note: You will need to configure auth by following the setup above by using Neon and next-auth
